@@ -112,7 +112,7 @@
     <!-- Product tables by category -->
     <% for (const [category, products] of Object.entries(byCategory)) { %>
       <% if (products.length === 0) continue; %>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6" data-category="<%= category %>">
         <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
           <h2 class="font-semibold text-gray-800"><%= category %></h2>
         </div>
@@ -120,6 +120,9 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="text-gray-500 text-xs uppercase tracking-wide">
+                <th class="px-3 py-3 text-center w-8">
+                  <input type="checkbox" class="select-all-cat rounded" data-category="<%= category %>">
+                </th>
                 <th class="px-4 py-3 text-left">Kolor</th>
                 <% sizes.forEach(size => { %>
                   <th class="px-2 py-3 text-center w-16"><%= size %></th>
@@ -131,7 +134,10 @@
             </thead>
             <tbody class="divide-y divide-gray-50">
               <% products.forEach(product => { %>
-                <tr class="hover:bg-gray-50 <%= product.active ? '' : 'opacity-40' %>">
+                <tr class="hover:bg-gray-50 product-row <%= product.active ? '' : 'opacity-40' %>" data-product-id="<%= product.id %>">
+                  <td class="px-3 py-3 text-center">
+                    <input type="checkbox" class="product-checkbox rounded" data-product-id="<%= product.id %>">
+                  </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
                       <div class="w-5 h-5 rounded-full border border-gray-200 flex-shrink-0" style="background-color: <%= product.color %>"></div>
@@ -185,6 +191,29 @@
       </div>
     <% } %>
   </div></main>
+
+  <!-- Bulk price bar -->
+  <div id="bulkBar" class="hidden fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-gray-900 text-white rounded-2xl shadow-2xl px-5 py-3 flex items-center gap-3 flex-wrap justify-center">
+    <span class="text-sm font-medium" id="bulkLabel">0 zaznaczonych</span>
+    <div class="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-1.5">
+      <label class="text-xs text-gray-300">Nowa cena:</label>
+      <input
+        type="number"
+        id="bulkPrice"
+        min="0"
+        step="1"
+        placeholder="np. 149"
+        class="w-20 bg-transparent text-white text-sm text-center focus:outline-none placeholder-gray-400"
+      >
+      <span class="text-gray-300 text-xs">zł</span>
+    </div>
+    <button onclick="applyBulkPrice()" class="bg-white text-gray-900 font-semibold text-sm px-4 py-1.5 rounded-xl hover:bg-gray-100 transition">
+      Zastosuj
+    </button>
+    <button onclick="clearSelection()" class="text-gray-400 hover:text-white text-xs px-2">
+      Anuluj
+    </button>
+  </div>
 
   <!-- Mobile bottom navigation -->
   <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#111] border-t border-white/10 flex">
@@ -277,6 +306,80 @@
         showNotification('Cena zapisana');
       });
     });
+
+    // ── BULK PRICE ─────────────────────────────────────────────
+    function getSelectedIds() {
+      return [...document.querySelectorAll('.product-checkbox:checked')].map(c => c.dataset.productId);
+    }
+
+    function updateBulkBar() {
+      const ids = getSelectedIds();
+      const bar = document.getElementById('bulkBar');
+      if (ids.length === 0) { bar.classList.add('hidden'); return; }
+      bar.classList.remove('hidden');
+      document.getElementById('bulkLabel').textContent = ids.length + ' zaznaczonych';
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.product-checkbox, .select-all-cat').forEach(c => c.checked = false);
+      updateBulkBar();
+    }
+
+    // Individual checkbox
+    document.querySelectorAll('.product-checkbox').forEach(cb => {
+      cb.addEventListener('change', updateBulkBar);
+    });
+
+    // "Select all" per category
+    document.querySelectorAll('.select-all-cat').forEach(cb => {
+      cb.addEventListener('change', function() {
+        const cat = this.dataset.category;
+        document.querySelectorAll('.product-checkbox').forEach(c => {
+          // find the row's category by traversing up to the table then category header
+          const table = c.closest('table');
+          const section = table ? table.closest('[data-category]') : null;
+          if (!section || section.dataset.category === cat) c.checked = this.checked;
+        });
+        updateBulkBar();
+      });
+    });
+
+    // Click on row highlights it
+    document.querySelectorAll('.product-row').forEach(row => {
+      row.addEventListener('click', function(e) {
+        if (e.target.closest('input, button, a')) return;
+        const cb = this.querySelector('.product-checkbox');
+        cb.checked = !cb.checked;
+        updateBulkBar();
+      });
+    });
+
+    async function applyBulkPrice() {
+      const price = parseFloat(document.getElementById('bulkPrice').value);
+      if (isNaN(price) || price < 0) {
+        document.getElementById('bulkPrice').focus();
+        return;
+      }
+      const ids = getSelectedIds();
+      if (!ids.length) return;
+
+      await Promise.all(ids.map(id =>
+        fetch('/admin/magazyn/cena', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: id, price })
+        })
+      ));
+
+      // Update visible inputs
+      ids.forEach(id => {
+        const input = document.querySelector(`.price-input[data-product-id="${id}"]`);
+        if (input) input.value = price;
+      });
+
+      showNotification(`Cena ${price} zł zastosowana dla ${ids.length} produktów`);
+      clearSelection();
+    }
 
     async function toggleProduct(productId, btn) {
       try {
