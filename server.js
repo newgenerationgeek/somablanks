@@ -107,13 +107,31 @@ app.get('/zamowienie/:token', (req, res) => {
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 
+const LOGIN_MAX_ATTEMPTS = 2;
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minut
+const loginAttempts = {}; // { ip: { count, lockedUntil } }
+
+function getLoginState(ip) {
+  if (!loginAttempts[ip]) loginAttempts[ip] = { count: 0, lockedUntil: null };
+  return loginAttempts[ip];
+}
+
 app.get('/login', (req, res) => {
   if (verifyToken(req.cookies['soma_auth'])) return res.redirect('/admin');
   res.render('login', { error: null });
 });
 
 app.post('/login', (req, res) => {
+  const ip = req.ip;
+  const state = getLoginState(ip);
+
+  if (state.lockedUntil && Date.now() < state.lockedUntil) {
+    const minutesLeft = Math.ceil((state.lockedUntil - Date.now()) / 60000);
+    return res.render('login', { error: `Zbyt wiele prób. Spróbuj za ${minutesLeft} min.` });
+  }
+
   if (req.body.password === ADMIN_PASSWORD) {
+    loginAttempts[ip] = { count: 0, lockedUntil: null };
     res.cookie('soma_auth', makeToken(), {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
@@ -121,7 +139,13 @@ app.post('/login', (req, res) => {
     });
     res.redirect('/admin');
   } else {
-    res.render('login', { error: 'Nieprawidłowe hasło.' });
+    state.count++;
+    if (state.count >= LOGIN_MAX_ATTEMPTS) {
+      state.lockedUntil = Date.now() + LOGIN_LOCKOUT_MS;
+      return res.render('login', { error: `Zbyt wiele prób. Konto zablokowane na 15 minut.` });
+    }
+    const remaining = LOGIN_MAX_ATTEMPTS - state.count;
+    res.render('login', { error: `Nieprawidłowe hasło. Pozostała ${remaining} próba.` });
   }
 });
 
