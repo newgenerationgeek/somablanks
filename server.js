@@ -74,27 +74,35 @@ app.get('/', (req, res) => {
 });
 
 app.post('/zamow', (req, res) => {
-  const { customer_name, customer_contact, product_id, size, notes } = req.body;
-  if (!customer_name || !customer_contact || !product_id || !size) {
+  const { customer_name, customer_contact, items, notes } = req.body;
+  if (!customer_name || !customer_contact || !items || !items.length) {
     return res.status(400).json({ success: false, message: 'Wypełnij wszystkie wymagane pola.' });
   }
-  const product = db.getProduct(product_id);
-  if (!product || !product.active) {
-    return res.status(404).json({ success: false, message: 'Produkt nie istnieje.' });
+  for (const item of items) {
+    const product = db.getProduct(item.productId);
+    if (!product || !product.active) {
+      return res.status(404).json({ success: false, message: `Produkt niedostępny.` });
+    }
+    const qty = db.getStockQty(item.productId, item.size);
+    if (qty < parseInt(item.quantity)) {
+      return res.status(400).json({ success: false, message: `Niewystarczający stan: ${product.sku} ${item.size}.` });
+    }
+    item.price = product.price;
   }
-  const qty = db.getStockQty(product_id, size);
-  if (qty <= 0) {
-    return res.status(400).json({ success: false, message: 'Wybrany rozmiar jest niedostępny.' });
-  }
-  db.createOrder({
-    customerName: customer_name,
-    customerContact: customer_contact,
-    productId: product_id,
-    size,
-    price: product.price,
-    notes
-  });
-  res.json({ success: true, message: 'Dziękujemy! Odezwiemy się wkrótce przez Facebook / SMS.' });
+  const token = db.createCartOrder({ customerName: customer_name, customerContact: customer_contact, items, notes });
+  res.json({ success: true, token });
+});
+
+app.get('/koszyk', (req, res) => {
+  const products = db.getActiveProductsWithStock();
+  res.render('koszyk', { products, sizes: SIZES });
+});
+
+app.get('/zamowienie/:token', (req, res) => {
+  const orders = db.getOrdersByToken(req.params.token);
+  if (!orders.length) return res.status(404).send('Nie znaleziono zamówienia.');
+  const total = orders.reduce((sum, o) => sum + o.price * o.quantity, 0);
+  res.render('zamowienie', { orders, total, token: req.params.token });
 });
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
@@ -129,7 +137,8 @@ app.get('/admin', requireAuth, (req, res) => {
   const recentOrders = db.getRecentOrders(5);
   const lowStockItems = db.getLowStock();
   const bestColors = db.getBestColors(3);
-  res.render('dashboard', { ...stats, recentOrders, lowStockItems, bestColors, colorMap: COLOR_MAP, formatDate });
+  const pendingCarts = db.getPendingCarts();
+  res.render('dashboard', { ...stats, recentOrders, lowStockItems, bestColors, pendingCarts, colorMap: COLOR_MAP, formatDate });
 });
 
 // ── ADMIN MAGAZYN ─────────────────────────────────────────────────────────────
@@ -180,6 +189,25 @@ app.post('/admin/zamowienia/status', requireAuth, (req, res) => {
 app.post('/admin/zamowienia/usun', requireAuth, (req, res) => {
   const ok = db.deleteOrder(req.body.order_id);
   if (!ok) return res.status(404).json({ success: false });
+  res.json({ success: true });
+});
+
+app.post('/admin/zamowienia/akceptuj-koszyk', requireAuth, (req, res) => {
+  const ok = db.acceptCartOrders(req.body.token);
+  if (!ok) return res.status(404).json({ success: false });
+  res.json({ success: true });
+});
+
+app.post('/admin/zamowienia/odrzuc-koszyk', requireAuth, (req, res) => {
+  const ok = db.rejectCartOrders(req.body.token);
+  if (!ok) return res.status(404).json({ success: false });
+  res.json({ success: true });
+});
+
+app.post('/admin/magazyn/cena', requireAuth, (req, res) => {
+  const price = parseFloat(req.body.price);
+  if (isNaN(price) || price < 0) return res.status(400).json({ success: false });
+  db.updatePrice(req.body.product_id, price);
   res.json({ success: true });
 });
 

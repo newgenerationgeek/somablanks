@@ -2,6 +2,7 @@ const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const dbDir = fs.existsSync('/var/data') ? '/var/data' : __dirname;
 const adapter = new FileSync(path.join(dbDir, 'db.json'));
@@ -243,7 +244,8 @@ module.exports = {
       .filter(o => ['paid', 'shipped'].includes(o.status))
       .reduce((sum, o) => sum + (o.price * o.quantity), 0);
     const lowStock = db.get('stock').filter(s => s.quantity === 1).value().length;
-    return { totalStock, newOrders, confirmedOrders, paidOrders, revenue, lowStock };
+    const pendingCarts = this.getPendingCarts().length;
+    return { totalStock, newOrders, confirmedOrders, paidOrders, revenue, lowStock, pendingCarts };
   },
 
   getBestColors(limit) {
@@ -267,8 +269,80 @@ module.exports = {
       confirmed: orders.filter(o => o.status === 'confirmed').length,
       paid: orders.filter(o => o.status === 'paid').length,
       shipped: orders.filter(o => o.status === 'shipped').length,
-      cancelled: orders.filter(o => o.status === 'cancelled').length
+      cancelled: orders.filter(o => o.status === 'cancelled').length,
+      pending: orders.filter(o => o.status === 'pending').length
     };
+  },
+
+  updatePrice(productId, price) {
+    db.get('products').find({ id: parseInt(productId) }).assign({ price: parseFloat(price) }).write();
+  },
+
+  createCartOrder({ customerName, customerContact, items, notes }) {
+    const token = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const now = nowLocal();
+    items.forEach(item => {
+      const id = nextId('orders');
+      db.get('orders').push({
+        id, token,
+        customer_name: customerName,
+        customer_contact: customerContact,
+        product_id: parseInt(item.productId),
+        size: item.size,
+        quantity: parseInt(item.quantity) || 1,
+        price: parseFloat(item.price) || 0,
+        status: 'pending',
+        notes: notes || null,
+        created_at: now,
+        paid_at: null,
+        shipped_at: null
+      }).write();
+    });
+    return token;
+  },
+
+  getOrdersByToken(token) {
+    const orders = db.get('orders').filter({ token }).value();
+    return orders.map(o => {
+      const p = db.get('products').find({ id: o.product_id }).value();
+      return { ...o, sku: p ? p.sku : '', category: p ? p.category : '' };
+    });
+  },
+
+  acceptCartOrders(token) {
+    const orders = db.get('orders').filter({ token, status: 'pending' }).value();
+    if (!orders.length) return false;
+    orders.forEach(order => {
+      this.decreaseStock(order.product_id, order.size, order.quantity);
+      db.get('orders').find({ id: order.id }).assign({ status: 'confirmed' }).write();
+    });
+    return true;
+  },
+
+  rejectCartOrders(token) {
+    const orders = db.get('orders').filter({ token, status: 'pending' }).value();
+    if (!orders.length) return false;
+    orders.forEach(order => {
+      db.get('orders').find({ id: order.id }).assign({ status: 'cancelled' }).write();
+    });
+    return true;
+  },
+
+  getPendingCarts() {
+    const pendingOrders = db.get('orders').filter({ status: 'pending' }).value();
+    const tokens = [...new Set(pendingOrders.map(o => o.token))].filter(Boolean);
+    return tokens.map(token => {
+      const orders = this.getOrdersByToken(token);
+      return {
+        token,
+        customer_name: orders[0].customer_name,
+        customer_contact: orders[0].customer_contact,
+        notes: orders[0].notes,
+        created_at: orders[0].created_at,
+        items: orders,
+        total: orders.reduce((sum, o) => sum + o.price * o.quantity, 0)
+      };
+    }).sort((a, b) => b.created_at.localeCompare(a.created_at));
   },
 
   // ── DELIVERIES ────────────────────────────────────────────────

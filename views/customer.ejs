@@ -9,10 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .modal-backdrop {
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-    }
   </style>
 </head>
 <body class="bg-white text-gray-900 min-h-screen">
@@ -41,7 +37,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <% products.forEach(product => { %>
             <%
-              const availableSizes = sizes.filter(s => product.stock[s] && product.stock[s] > 0);
               const totalStock = sizes.reduce((sum, s) => sum + (product.stock[s] || 0), 0);
             %>
             <div class="group bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow duration-300">
@@ -86,22 +81,28 @@
                 </p>
               <% } %>
 
-              <!-- Order button -->
-              <% if (availableSizes.length === 0) { %>
-                <button disabled class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-50 text-gray-300 cursor-not-allowed">
-                  Brak w magazynie
-                </button>
+              <!-- Size buttons for cart -->
+              <% if (totalStock === 0) { %>
+                <button disabled class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-50 text-gray-300 cursor-not-allowed">Brak w magazynie</button>
               <% } else { %>
-                <button
-                  class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors duration-200 open-modal-btn"
-                  data-id="<%= product.id %>"
-                  data-sku="<%= product.sku %>"
-                  data-category="<%= product.category %>"
-                  data-price="<%= product.price %>"
-                  data-sizes="<%= JSON.stringify(availableSizes) %>"
-                >
-                  Zamów teraz
-                </button>
+                <div class="flex flex-wrap gap-1.5">
+                  <% sizes.forEach(size => { %>
+                    <% const qty = product.stock[size] || 0; %>
+                    <% if (qty > 0) { %>
+                      <button
+                        class="add-to-cart px-3 py-1.5 rounded-lg text-xs font-medium border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-colors duration-150"
+                        data-product-id="<%= product.id %>"
+                        data-sku="<%= product.sku %>"
+                        data-category="<%= product.category %>"
+                        data-size="<%= size %>"
+                        data-price="<%= product.price %>"
+                        data-max-qty="<%= qty %>"
+                      ><%= size %></button>
+                    <% } else { %>
+                      <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-300 border-2 border-gray-100 line-through"><%= size %></span>
+                    <% } %>
+                  <% }) %>
+                </div>
               <% } %>
             </div>
           <% }) %>
@@ -117,197 +118,42 @@
     </div>
   </footer>
 
-  <!-- Order Modal -->
-  <div
-    id="orderModal"
-    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
-    style="background: rgba(0,0,0,0.5);"
-    onclick="closeModalOnBackdrop(event)"
-  >
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative" id="modalContent">
-      <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-
-      <!-- Form state -->
-      <div id="modalForm">
-        <div class="mb-6">
-          <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Zamów</h2>
-          <p class="text-gray-500 text-sm mt-1" id="modalSubtitle"></p>
-        </div>
-
-        <form id="orderForm" onsubmit="submitOrder(event)">
-          <input type="hidden" id="productId" name="product_id">
-
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Imię i nazwisko <span class="text-red-500">*</span></label>
-              <input
-                type="text"
-                id="customerName"
-                name="customer_name"
-                required
-                placeholder="Jan Kowalski"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-              >
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Facebook / telefon <span class="text-red-500">*</span></label>
-              <input
-                type="text"
-                id="customerContact"
-                name="customer_contact"
-                required
-                placeholder="facebook.com/jankowalski lub +48 123 456 789"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-              >
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Rozmiar <span class="text-red-500">*</span></label>
-              <select
-                id="sizeSelect"
-                name="size"
-                required
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition bg-white"
-              >
-                <option value="">Wybierz rozmiar...</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Uwagi (opcjonalnie)</label>
-              <textarea
-                id="orderNotes"
-                name="notes"
-                rows="2"
-                placeholder="Dodatkowe informacje..."
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition resize-none"
-              ></textarea>
-            </div>
-          </div>
-
-          <div id="formError" class="hidden mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
-
-          <button
-            type="submit"
-            id="submitBtn"
-            class="mt-5 w-full bg-gray-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors duration-200"
-          >
-            Wyślij zamówienie
-          </button>
-        </form>
-      </div>
-
-      <!-- Success state -->
-      <div id="modalSuccess" class="hidden text-center py-4">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
-        </div>
-        <h2 class="text-xl font-bold text-gray-900 mb-2">Dziękujemy!</h2>
-        <p class="text-gray-500 text-sm">Odezwiemy się wkrótce przez Facebook / SMS.</p>
-        <button onclick="closeModal()" class="mt-6 bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-700 transition">
-          Zamknij
-        </button>
-      </div>
-    </div>
+  <!-- Floating cart button -->
+  <div id="cartBtn" class="hidden fixed bottom-6 right-6 z-50">
+    <a href="/koszyk" class="flex items-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-lg hover:bg-gray-700 transition font-medium text-sm">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-9H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+      Koszyk (<span id="cartCount">0</span>)
+    </a>
   </div>
 
   <script>
+    const CART_KEY = 'soma_cart';
+    function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
+    function saveCart(c) { localStorage.setItem(CART_KEY, JSON.stringify(c)); }
+    function updateCartBtn() {
+      const total = getCart().reduce((s, i) => s + i.quantity, 0);
+      document.getElementById('cartCount').textContent = total;
+      document.getElementById('cartBtn').classList.toggle('hidden', total === 0);
+    }
     document.addEventListener('click', function(e) {
-      const btn = e.target.closest('.open-modal-btn');
+      const btn = e.target.closest('.add-to-cart');
       if (!btn) return;
-      const sizes = JSON.parse(btn.dataset.sizes);
-      openModal(btn.dataset.id, btn.dataset.sku, btn.dataset.category, btn.dataset.price, sizes);
-    });
-
-    function openModal(productId, sku, category, price, availableSizes) {
-      document.getElementById('productId').value = productId;
-      document.getElementById('modalTitle').textContent = sku;
-      document.getElementById('modalSubtitle').textContent = category + ' — ' + price + ' zł';
-
-      const select = document.getElementById('sizeSelect');
-      select.innerHTML = '<option value="">Wybierz rozmiar...</option>';
-      availableSizes.forEach(size => {
-        const opt = document.createElement('option');
-        opt.value = size;
-        opt.textContent = size;
-        select.appendChild(opt);
-      });
-
-      document.getElementById('orderForm').reset();
-      document.getElementById('productId').value = productId;
-      document.getElementById('formError').classList.add('hidden');
-      document.getElementById('modalForm').classList.remove('hidden');
-      document.getElementById('modalSuccess').classList.add('hidden');
-      document.getElementById('submitBtn').disabled = false;
-      document.getElementById('submitBtn').textContent = 'Wyślij zamówienie';
-
-      document.getElementById('orderModal').classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-      document.getElementById('orderModal').classList.add('hidden');
-      document.body.style.overflow = '';
-    }
-
-    function closeModalOnBackdrop(e) {
-      if (e.target === document.getElementById('orderModal')) {
-        closeModal();
+      const cart = getCart();
+      const { productId, sku, category, size, price, maxQty } = btn.dataset;
+      const existing = cart.find(i => i.productId === productId && i.size === size);
+      if (existing) {
+        if (existing.quantity < parseInt(maxQty)) existing.quantity++;
+      } else {
+        cart.push({ productId, sku, category, size, quantity: 1, price: parseFloat(price), maxQty: parseInt(maxQty) });
       }
-    }
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeModal();
+      saveCart(cart);
+      updateCartBtn();
+      // Flash feedback on button
+      btn.textContent = '✓';
+      btn.classList.add('bg-gray-900', 'text-white');
+      setTimeout(() => { btn.textContent = size; btn.classList.remove('bg-gray-900', 'text-white'); }, 800);
     });
-
-    async function submitOrder(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      const errorDiv = document.getElementById('formError');
-
-      btn.disabled = true;
-      btn.textContent = 'Wysyłanie...';
-      errorDiv.classList.add('hidden');
-
-      const formData = {
-        product_id: document.getElementById('productId').value,
-        customer_name: document.getElementById('customerName').value.trim(),
-        customer_contact: document.getElementById('customerContact').value.trim(),
-        size: document.getElementById('sizeSelect').value,
-        notes: document.getElementById('orderNotes').value.trim()
-      };
-
-      try {
-        const resp = await fetch('/zamow', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-        const data = await resp.json();
-
-        if (data.success) {
-          document.getElementById('modalForm').classList.add('hidden');
-          document.getElementById('modalSuccess').classList.remove('hidden');
-        } else {
-          errorDiv.textContent = data.message || 'Wystąpił błąd. Spróbuj ponownie.';
-          errorDiv.classList.remove('hidden');
-          btn.disabled = false;
-          btn.textContent = 'Wyślij zamówienie';
-        }
-      } catch (err) {
-        errorDiv.textContent = 'Błąd połączenia. Spróbuj ponownie.';
-        errorDiv.classList.remove('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Wyślij zamówienie';
-      }
-    }
+    updateCartBtn();
   </script>
 </body>
 </html>

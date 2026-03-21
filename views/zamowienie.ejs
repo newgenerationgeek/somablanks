@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soma Blanks — Zamówienie <%= token %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-white text-gray-900 min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-40">
+    <div class="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <a href="/" class="block">
+          <h1 class="text-2xl font-bold tracking-widest text-gray-900">SOMA BLANKS</h1>
+          <p class="text-xs text-gray-400 tracking-wide mt-0.5">Premium oversized tees</p>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-2xl mx-auto px-6 py-12">
+
+    <!-- Success header -->
+    <div class="text-center mb-10">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Zamówienie złożone!</h2>
+      <p class="text-gray-500 text-sm">Nr zamówienia: <span class="font-mono font-semibold text-gray-700"><%= token %></span></p>
+    </div>
+
+    <!-- Order items -->
+    <div class="bg-gray-50 rounded-2xl p-6 mb-6">
+      <h3 class="font-semibold text-gray-800 mb-4">Twoje zamówienie</h3>
+      <div class="space-y-3">
+        <% orders.forEach(order => { %>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-900 text-sm"><%= order.sku %> <span class="text-gray-500"><%= order.size %></span></p>
+              <p class="text-xs text-gray-400"><%= order.category %> · <%= order.quantity %> szt.</p>
+            </div>
+            <p class="font-semibold text-gray-900 text-sm"><%= (order.price * order.quantity).toFixed(0) %> zł</p>
+          </div>
+        <% }) %>
+        <div class="border-t border-gray-200 pt-3 flex items-center justify-between">
+          <span class="font-semibold text-gray-800">Razem:</span>
+          <span class="font-bold text-xl text-gray-900"><%= total.toFixed(0) %> zł</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="space-y-3 mb-6">
+      <button
+        id="copyMsgBtn"
+        onclick="copyMessage()"
+        class="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-3.5 rounded-xl text-sm font-medium hover:bg-gray-700 transition"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+        Kopiuj wiadomość do Messengera
+      </button>
+      <button
+        id="copyLinkBtn"
+        onclick="copyLink()"
+        class="w-full flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-700 py-3.5 rounded-xl text-sm font-medium hover:border-gray-400 hover:text-gray-900 transition"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        Kopiuj link
+      </button>
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mb-8">Wyślij link lub wiadomość przez Facebooka Messengera</p>
+
+    <div class="text-center">
+      <a href="/" class="text-sm text-gray-500 hover:text-gray-800 transition">← Wróć do sklepu</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-100 mt-8">
+    <div class="max-w-2xl mx-auto px-6 py-6 text-center">
+      <p class="text-gray-400 text-sm">© Soma Blanks 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    const orders = <%- JSON.stringify(orders) %>;
+    const total = <%= total %>;
+    const token = '<%= token %>';
+
+    function buildMessage() {
+      let msg = 'Cześć! Składam zamówienie w Soma Blanks 🛍️\n';
+      orders.forEach(o => {
+        msg += `• ${o.sku} ${o.size} × ${o.quantity} szt. — ${(o.price * o.quantity).toFixed(0)} zł\n`;
+      });
+      msg += `Razem: ${total.toFixed(0)} zł\n`;
+      msg += `Link: ${window.location.href}`;
+      return msg;
+    }
+
+    async function copyMessage() {
+      const btn = document.getElementById('copyMsgBtn');
+      try {
+        await navigator.clipboard.writeText(buildMessage());
+        btn.textContent = '✓ Skopiowano!';
+        setTimeout(() => { btn.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>Kopiuj wiadomość do Messengera'; }, 2000);
+      } catch (e) {
+        // Fallback
+        const el = document.createElement('textarea');
+        el.value = buildMessage();
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        btn.textContent = '✓ Skopiowano!';
+        setTimeout(() => { btn.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>Kopiuj wiadomość do Messengera'; }, 2000);
+      }
+    }
+
+    async function copyLink() {
+      const btn = document.getElementById('copyLinkBtn');
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        btn.textContent = '✓ Skopiowano!';
+        setTimeout(() => { btn.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>Kopiuj link'; }, 2000);
+      } catch (e) {
+        const el = document.createElement('textarea');
+        el.value = window.location.href;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        btn.textContent = '✓ Skopiowano!';
+        setTimeout(() => { btn.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>Kopiuj link'; }, 2000);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -155,7 +155,19 @@
                     </td>
                   <% }) %>
                   <td class="px-4 py-3 text-center font-semibold text-gray-700"><%= total %></td>
-                  <td class="px-4 py-3 text-center text-gray-600"><%= product.price %> zł</td>
+                  <td class="px-4 py-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value="<%= product.price %>"
+                        data-product-id="<%= product.id %>"
+                        class="price-input w-16 text-center border border-gray-200 rounded px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      >
+                      <span class="text-gray-500 text-xs">zł</span>
+                    </div>
+                  </td>
                   <td class="px-4 py-3 text-center">
                     <button
                       onclick="toggleProduct(<%= product.id %>, this)"
@@ -250,6 +262,19 @@
             showNotification('Błąd sieci', true);
           }
         }, 400);
+      });
+    });
+
+    document.querySelectorAll('.price-input').forEach(input => {
+      input.addEventListener('change', async function() {
+        const price = parseFloat(this.value);
+        if (isNaN(price) || price < 0) return;
+        await fetch('/admin/magazyn/cena', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: this.dataset.productId, price })
+        });
+        showNotification('Cena zapisana');
       });
     });
 

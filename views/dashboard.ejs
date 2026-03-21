@@ -79,8 +79,8 @@
         </div>
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
           <div class="text-xl lg:text-2xl mb-1">🆕</div>
-          <div class="text-2xl lg:text-3xl font-bold text-blue-600"><%= newOrders %></div>
-          <div class="text-gray-500 text-xs lg:text-sm mt-1">Nowe zamówienia</div>
+          <div class="text-2xl lg:text-3xl font-bold <%= pendingCarts && pendingCarts.length > 0 ? 'text-amber-500' : 'text-blue-600' %>"><%= newOrders %></div>
+          <div class="text-gray-500 text-xs lg:text-sm mt-1">Nowe zamówienia<% if (pendingCarts && pendingCarts.length > 0) { %> <span class="text-amber-500 font-semibold">(<%= pendingCarts.length %> koszyków)</span><% } %></div>
         </div>
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
           <div class="text-xl lg:text-2xl mb-1">💰</div>
@@ -103,6 +103,36 @@
           <div class="text-gray-500 text-xs lg:text-sm mt-1">Niski stan</div>
         </div>
       </div>
+
+      <% if (pendingCarts && pendingCarts.length > 0) { %>
+      <div class="mb-6">
+        <h2 class="text-base font-semibold text-gray-800 mb-3">🕐 Oczekujące zamówienia (<%= pendingCarts.length %>)</h2>
+        <div class="space-y-3">
+          <% pendingCarts.forEach(cart => { %>
+          <div class="bg-white rounded-xl border-2 border-amber-200 shadow-sm p-4" id="cart-<%= cart.token %>">
+            <div class="flex items-start justify-between gap-3 flex-wrap">
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-900"><%= cart.customer_name %></p>
+                <p class="text-xs text-gray-500 mt-0.5"><%= cart.customer_contact %></p>
+                <div class="mt-2 space-y-1">
+                  <% cart.items.forEach(item => { %>
+                    <p class="text-sm text-gray-700">• <%= item.sku %> <%= item.size %> × <%= item.quantity %> szt. — <%= (item.price * item.quantity).toFixed(0) %> zł</p>
+                  <% }) %>
+                </div>
+                <p class="text-sm font-semibold text-gray-900 mt-2">Razem: <%= cart.total.toFixed(0) %> zł</p>
+                <% if (cart.notes) { %><p class="text-xs text-gray-400 mt-1">Uwagi: <%= cart.notes %></p><% } %>
+              </div>
+              <div class="flex flex-col gap-2 shrink-0">
+                <button onclick="acceptCart('<%= cart.token %>')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">✓ Akceptuj</button>
+                <button onclick="rejectCart('<%= cart.token %>')" class="border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition">✕ Odrzuć</button>
+                <a href="/zamowienie/<%= cart.token %>" target="_blank" class="text-center text-xs text-gray-400 hover:text-gray-600">Zobacz →</a>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
 
@@ -262,6 +292,17 @@
     function closeSidebar() {
       document.getElementById('sidebar').classList.add('-translate-x-full');
       document.getElementById('overlay').classList.add('hidden');
+    }
+
+    async function acceptCart(token) {
+      if (!confirm('Zaakceptować zamówienie? Stan magazynu zostanie zaktualizowany.')) return;
+      const r = await fetch('/admin/zamowienia/akceptuj-koszyk', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({token}) });
+      if ((await r.json()).success) { document.getElementById('cart-'+token).remove(); location.reload(); }
+    }
+    async function rejectCart(token) {
+      if (!confirm('Odrzucić zamówienie?')) return;
+      const r = await fetch('/admin/zamowienia/odrzuc-koszyk', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({token}) });
+      if ((await r.json()).success) { document.getElementById('cart-'+token).remove(); }
     }
   </script>
 

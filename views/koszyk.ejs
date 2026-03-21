@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soma Blanks — Koszyk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-white text-gray-900 min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-40">
+    <div class="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <a href="/" class="block">
+          <h1 class="text-2xl font-bold tracking-widest text-gray-900">SOMA BLANKS</h1>
+          <p class="text-xs text-gray-400 tracking-wide mt-0.5">Premium oversized tees</p>
+        </a>
+      </div>
+      <a href="/" class="text-sm text-gray-500 hover:text-gray-800 transition">← Wróć</a>
+    </div>
+  </header>
+
+  <div class="max-w-2xl mx-auto px-6 py-10">
+    <h2 class="text-2xl font-bold text-gray-900 mb-8">Koszyk</h2>
+
+    <!-- Empty cart state -->
+    <div id="emptyCart" class="hidden text-center py-16">
+      <div class="text-5xl mb-4">🛍️</div>
+      <p class="text-gray-500 text-lg mb-6">Koszyk jest pusty</p>
+      <a href="/" class="inline-block bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-gray-700 transition">Przeglądaj produkty</a>
+    </div>
+
+    <!-- Cart with items -->
+    <div id="cartContent">
+      <!-- Cart items list -->
+      <div id="cartItems" class="space-y-3 mb-8"></div>
+
+      <!-- Total -->
+      <div class="border-t border-gray-100 pt-4 mb-8">
+        <div class="flex justify-between items-center">
+          <span class="font-semibold text-gray-800 text-lg">Razem:</span>
+          <span id="cartTotal" class="font-bold text-2xl text-gray-900">0 zł</span>
+        </div>
+      </div>
+
+      <!-- Order form -->
+      <div class="bg-gray-50 rounded-2xl p-6">
+        <h3 class="font-semibold text-gray-800 mb-5 text-lg">Twoje dane</h3>
+        <form id="orderForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Imię i nazwisko <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              id="customerName"
+              required
+              placeholder="Jan Kowalski"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition bg-white"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Facebook / telefon <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              id="customerContact"
+              required
+              placeholder="facebook.com/jankowalski lub +48 123 456 789"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition bg-white"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Uwagi (opcjonalnie)</label>
+            <textarea
+              id="orderNotes"
+              rows="2"
+              placeholder="Dodatkowe informacje..."
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition resize-none bg-white"
+            ></textarea>
+          </div>
+
+          <div id="formError" class="hidden mt-1 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+
+          <button
+            type="submit"
+            id="submitBtn"
+            class="w-full bg-gray-900 text-white py-3.5 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors duration-200 mt-2"
+          >
+            Złóż zamówienie
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-100 mt-8">
+    <div class="max-w-2xl mx-auto px-6 py-6 text-center">
+      <p class="text-gray-400 text-sm">© Soma Blanks 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    const CART_KEY = 'soma_cart';
+    function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
+    function saveCart(c) { localStorage.setItem(CART_KEY, JSON.stringify(c)); }
+
+    function renderCart() {
+      const cart = getCart();
+      const itemsEl = document.getElementById('cartItems');
+      const emptyEl = document.getElementById('emptyCart');
+      const contentEl = document.getElementById('cartContent');
+      const totalEl = document.getElementById('cartTotal');
+
+      if (cart.length === 0) {
+        emptyEl.classList.remove('hidden');
+        contentEl.classList.add('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      contentEl.classList.remove('hidden');
+
+      itemsEl.innerHTML = '';
+      let total = 0;
+
+      cart.forEach((item, idx) => {
+        total += item.price * item.quantity;
+        const div = document.createElement('div');
+        div.className = 'bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-4';
+        div.innerHTML = `
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-gray-900 text-sm">${item.sku}</p>
+            <p class="text-xs text-gray-400 mt-0.5">${item.category} · ${item.size}</p>
+            <p class="text-sm font-medium text-gray-700 mt-1">${item.price} zł / szt.</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="changeQty(${idx}, -1)" class="w-7 h-7 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100 transition text-sm font-bold flex items-center justify-center">−</button>
+            <span class="w-6 text-center font-semibold text-sm">${item.quantity}</span>
+            <button onclick="changeQty(${idx}, 1)" class="w-7 h-7 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100 transition text-sm font-bold flex items-center justify-center">+</button>
+          </div>
+          <div class="text-right shrink-0 min-w-[60px]">
+            <p class="font-bold text-gray-900 text-sm">${(item.price * item.quantity).toFixed(0)} zł</p>
+            <button onclick="removeItem(${idx})" class="text-xs text-red-400 hover:text-red-600 transition mt-1">Usuń</button>
+          </div>
+        `;
+        itemsEl.appendChild(div);
+      });
+
+      totalEl.textContent = total.toFixed(0) + ' zł';
+    }
+
+    function changeQty(idx, delta) {
+      const cart = getCart();
+      if (!cart[idx]) return;
+      const newQty = cart[idx].quantity + delta;
+      if (newQty < 1) { removeItem(idx); return; }
+      if (newQty > cart[idx].maxQty) return;
+      cart[idx].quantity = newQty;
+      saveCart(cart);
+      renderCart();
+    }
+
+    function removeItem(idx) {
+      const cart = getCart();
+      cart.splice(idx, 1);
+      saveCart(cart);
+      renderCart();
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const cart = getCart();
+      if (!cart.length) return;
+
+      const btn = document.getElementById('submitBtn');
+      const errorDiv = document.getElementById('formError');
+      const customerName = document.getElementById('customerName').value.trim();
+      const customerContact = document.getElementById('customerContact').value.trim();
+      const notes = document.getElementById('orderNotes').value.trim();
+
+      if (!customerName || !customerContact) {
+        errorDiv.textContent = 'Wypełnij wszystkie wymagane pola.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Wysyłanie...';
+      errorDiv.classList.add('hidden');
+
+      try {
+        const resp = await fetch('/zamow', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customer_name: customerName, customer_contact: customerContact, items: cart, notes })
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+          localStorage.removeItem(CART_KEY);
+          window.location.href = '/zamowienie/' + data.token;
+        } else {
+          errorDiv.textContent = data.message || 'Wystąpił błąd. Spróbuj ponownie.';
+          errorDiv.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Złóż zamówienie';
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Błąd połączenia. Spróbuj ponownie.';
+        errorDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Złóż zamówienie';
+      }
+    });
+
+    renderCart();
+  </script>
+</body>
+</html>
