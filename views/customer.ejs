@@ -87,21 +87,22 @@
               <% } %>
 
               <!-- Order button -->
-              <button
-                <% if (availableSizes.length === 0) { %>
-                  disabled
-                  class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-50 text-gray-300 cursor-not-allowed"
-                <% } else { %>
-                  onclick="openModal(<%= product.id %>, '<%= product.sku.replace(/'/g, "\\'") %>', '<%= product.category.replace(/'/g, "\\'") %>', <%= product.price %>, <%- JSON.stringify(availableSizes) %>)"
-                  class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors duration-200"
-                <% } %>
-              >
-                <% if (availableSizes.length === 0) { %>
+              <% if (availableSizes.length === 0) { %>
+                <button disabled class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-50 text-gray-300 cursor-not-allowed">
                   Brak w magazynie
-                <% } else { %>
-                  Zapytaj o rozmiar
-                <% } %>
-              </button>
+                </button>
+              <% } else { %>
+                <button
+                  class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors duration-200 open-modal-btn"
+                  data-id="<%= product.id %>"
+                  data-sku="<%= product.sku %>"
+                  data-category="<%= product.category %>"
+                  data-price="<%= product.price %>"
+                  data-sizes="<%= JSON.stringify(availableSizes) %>"
+                >
+                  Zamów teraz
+                </button>
+              <% } %>
             </div>
           <% }) %>
         </div>
@@ -218,6 +219,13 @@
   </div>
 
   <script>
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.open-modal-btn');
+      if (!btn) return;
+      const sizes = JSON.parse(btn.dataset.sizes);
+      openModal(btn.dataset.id, btn.dataset.sku, btn.dataset.category, btn.dataset.price, sizes);
+    });
+
     function openModal(productId, sku, category, price, availableSizes) {
       document.getElementById('productId').value = productId;
       document.getElementById('modalTitle').textContent = sku;
