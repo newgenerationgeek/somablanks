@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soma Blanks — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-56 bg-[#111] min-h-screen flex flex-col fixed top-0 left-0 z-10">
+    <div class="px-6 py-6 border-b border-white/10">
+      <span class="text-white text-xl font-bold tracking-widest">SOMA</span>
+      <p class="text-gray-500 text-xs mt-0.5">blanks admin</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="/admin/magazyn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        Magazyn
+      </a>
+      <a href="/admin/zamowienia" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Zamówienia
+      </a>
+      <a href="/admin/dostawa" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        Dostawa
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <a href="/wyloguj" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:text-red-400 text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Wyloguj
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="ml-56 flex-1 p-8">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <p class="text-gray-500 text-sm mt-1">Przegląd stanu magazynu i zamówień</p>
+    </div>
+
+    <!-- Metrics cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div class="text-2xl mb-1">📦</div>
+        <div class="text-3xl font-bold text-gray-900"><%= totalStock %></div>
+        <div class="text-gray-500 text-sm mt-1">Stan magazynu</div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div class="text-2xl mb-1">🆕</div>
+        <div class="text-3xl font-bold text-blue-600"><%= newOrders %></div>
+        <div class="text-gray-500 text-sm mt-1">Nowe zamówienia</div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div class="text-2xl mb-1">💰</div>
+        <div class="text-3xl font-bold text-purple-600"><%= confirmedOrders %></div>
+        <div class="text-gray-500 text-sm mt-1">Do opłacenia</div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div class="text-2xl mb-1">📬</div>
+        <div class="text-3xl font-bold text-amber-600"><%= paidOrders %></div>
+        <div class="text-gray-500 text-sm mt-1">Do wysyłki</div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div class="text-2xl mb-1">✅</div>
+        <div class="text-3xl font-bold text-green-600"><%= revenue.toFixed(0) %> zł</div>
+        <div class="text-gray-500 text-sm mt-1">Przychód</div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <div class="text-2xl mb-1">⚠️</div>
+        <div class="text-3xl font-bold text-red-500"><%= lowStock %></div>
+        <div class="text-gray-500 text-sm mt-1">Niski stan</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Recent orders -->
+      <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="font-semibold text-gray-800">Ostatnie zamówienia</h2>
+          <a href="/admin/zamowienia" class="text-sm text-gray-500 hover:text-gray-800 transition">Zobacz wszystkie →</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+                <th class="px-4 py-3 text-left">Klient</th>
+                <th class="px-4 py-3 text-left">Produkt</th>
+                <th class="px-4 py-3 text-left">Rozmiar</th>
+                <th class="px-4 py-3 text-left">Status</th>
+                <th class="px-4 py-3 text-left">Data</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <% if (recentOrders.length === 0) { %>
+                <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Brak zamówień</td></tr>
+              <% } else { %>
+                <% recentOrders.forEach(order => { %>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium text-gray-800"><%= order.customer_name %></td>
+                    <td class="px-4 py-3 text-gray-600"><%= order.sku %></td>
+                    <td class="px-4 py-3 text-gray-600"><%= order.size %></td>
+                    <td class="px-4 py-3">
+                      <% if (order.status === 'new') { %>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Nowe</span>
+                      <% } else if (order.status === 'confirmed') { %>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Potwierdzone</span>
+                      <% } else if (order.status === 'paid') { %>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Opłacone</span>
+                      <% } else if (order.status === 'shipped') { %>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Wysłane</span>
+                      <% } else if (order.status === 'cancelled') { %>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Anulowane</span>
+                      <% } %>
+                    </td>
+                    <td class="px-4 py-3 text-gray-500"><%= formatDate(order.created_at) %></td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="space-y-6">
+        <!-- Best colors -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h2 class="font-semibold text-gray-800 mb-4">Najpopularniejsze kolory</h2>
+          <% if (bestColors.length === 0) { %>
+            <p class="text-gray-400 text-sm">Brak danych</p>
+          <% } else { %>
+            <div class="space-y-3">
+              <% bestColors.forEach((item, idx) => { %>
+                <div class="flex items-center gap-3">
+                  <span class="text-gray-400 text-sm font-medium w-4"><%= idx + 1 %></span>
+                  <div class="w-5 h-5 rounded-full border border-gray-200 flex-shrink-0" style="background-color: <%= colorMap[item.sku] || '#999' %>"></div>
+                  <span class="text-sm text-gray-700 flex-1"><%= item.sku %></span>
+                  <span class="text-sm font-semibold text-gray-900"><%= item.cnt %> szt.</span>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Low stock -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h2 class="font-semibold text-gray-800 mb-4">⚠️ Niski stan (1 szt.)</h2>
+          <% if (lowStockItems.length === 0) { %>
+            <p class="text-green-600 text-sm">Brak produktów z niskim stanem</p>
+          <% } else { %>
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+              <% lowStockItems.forEach(item => { %>
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full border border-gray-200" style="background-color: <%= colorMap[item.sku] || '#999' %>"></div>
+                    <span class="text-gray-700"><%= item.sku %></span>
+                    <span class="text-gray-400"><%= item.size %></span>
+                  </div>
+                  <span class="font-semibold text-amber-600">1 szt.</span>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

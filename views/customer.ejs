@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soma Blanks — Premium Oversized Tees</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .modal-backdrop {
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-900 min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-40">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold tracking-widest text-gray-900">SOMA BLANKS</h1>
+        <p class="text-xs text-gray-400 tracking-wide mt-0.5">Premium oversized tees</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="max-w-6xl mx-auto px-6 py-12">
+
+    <% for (const [category, products] of Object.entries(byCategory)) { %>
+      <% if (products.length === 0) continue; %>
+      <section class="mb-16">
+        <div class="mb-8">
+          <h2 class="text-xl font-bold text-gray-900"><%= category %></h2>
+          <div class="w-12 h-0.5 bg-gray-900 mt-2"></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% products.forEach(product => { %>
+            <%
+              const availableSizes = sizes.filter(s => product.stock[s] && product.stock[s] > 0);
+              const totalStock = sizes.reduce((sum, s) => sum + (product.stock[s] || 0), 0);
+            %>
+            <div class="group bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow duration-300">
+              <!-- Color swatch -->
+              <div class="flex items-center gap-3 mb-4">
+                <div
+                  class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-inner"
+                  style="background-color: <%= product.color %>;"
+                ></div>
+                <div>
+                  <h3 class="font-semibold text-gray-900"><%= product.sku %></h3>
+                  <p class="text-xs text-gray-400"><%= product.price %> zł</p>
+                </div>
+              </div>
+
+              <!-- Size badges -->
+              <div class="flex flex-wrap gap-1.5 mb-5">
+                <% sizes.forEach(size => { %>
+                  <% const qty = product.stock[size] || 0; %>
+                  <% if (qty >= 2) { %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                      <%= size %>
+                    </span>
+                  <% } else if (qty === 1) { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200" title="Ostatnia sztuka">
+                      <%= size %> <span class="text-amber-500">!</span>
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-300 border border-gray-100 line-through">
+                      <%= size %>
+                    </span>
+                  <% } %>
+                <% }) %>
+              </div>
+
+              <!-- Availability summary -->
+              <% if (totalStock === 0) { %>
+                <p class="text-xs text-gray-400 mb-4">Chwilowo niedostępne</p>
+              <% } else { %>
+                <p class="text-xs text-gray-400 mb-4">
+                  <span class="text-green-600 font-medium"><%= totalStock %> szt.</span> dostępnych
+                </p>
+              <% } %>
+
+              <!-- Order button -->
+              <button
+                <% if (availableSizes.length === 0) { %>
+                  disabled
+                  class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-50 text-gray-300 cursor-not-allowed"
+                <% } else { %>
+                  onclick="openModal(<%= product.id %>, '<%= product.sku.replace(/'/g, "\\'") %>', '<%= product.category.replace(/'/g, "\\'") %>', <%= product.price %>, <%- JSON.stringify(availableSizes) %>)"
+                  class="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors duration-200"
+                <% } %>
+              >
+                <% if (availableSizes.length === 0) { %>
+                  Brak w magazynie
+                <% } else { %>
+                  Zapytaj o rozmiar
+                <% } %>
+              </button>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-100 mt-8">
+    <div class="max-w-6xl mx-auto px-6 py-6 text-center">
+      <p class="text-gray-400 text-sm">© Soma Blanks 2025</p>
+    </div>
+  </footer>
+
+  <!-- Order Modal -->
+  <div
+    id="orderModal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+    style="background: rgba(0,0,0,0.5);"
+    onclick="closeModalOnBackdrop(event)"
+  >
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative" id="modalContent">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <!-- Form state -->
+      <div id="modalForm">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Zamów</h2>
+          <p class="text-gray-500 text-sm mt-1" id="modalSubtitle"></p>
+        </div>
+
+        <form id="orderForm" onsubmit="submitOrder(event)">
+          <input type="hidden" id="productId" name="product_id">
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Imię i nazwisko <span class="text-red-500">*</span></label>
+              <input
+                type="text"
+                id="customerName"
+                name="customer_name"
+                required
+                placeholder="Jan Kowalski"
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Facebook / telefon <span class="text-red-500">*</span></label>
+              <input
+                type="text"
+                id="customerContact"
+                name="customer_contact"
+                required
+                placeholder="facebook.com/jankowalski lub +48 123 456 789"
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Rozmiar <span class="text-red-500">*</span></label>
+              <select
+                id="sizeSelect"
+                name="size"
+                required
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition bg-white"
+              >
+                <option value="">Wybierz rozmiar...</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Uwagi (opcjonalnie)</label>
+              <textarea
+                id="orderNotes"
+                name="notes"
+                rows="2"
+                placeholder="Dodatkowe informacje..."
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition resize-none"
+              ></textarea>
+            </div>
+          </div>
+
+          <div id="formError" class="hidden mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+
+          <button
+            type="submit"
+            id="submitBtn"
+            class="mt-5 w-full bg-gray-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors duration-200"
+          >
+            Wyślij zamówienie
+          </button>
+        </form>
+      </div>
+
+      <!-- Success state -->
+      <div id="modalSuccess" class="hidden text-center py-4">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Dziękujemy!</h2>
+        <p class="text-gray-500 text-sm">Odezwiemy się wkrótce przez Facebook / SMS.</p>
+        <button onclick="closeModal()" class="mt-6 bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-700 transition">
+          Zamknij
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(productId, sku, category, price, availableSizes) {
+      document.getElementById('productId').value = productId;
+      document.getElementById('modalTitle').textContent = sku;
+      document.getElementById('modalSubtitle').textContent = category + ' — ' + price + ' zł';
+
+      const select = document.getElementById('sizeSelect');
+      select.innerHTML = '<option value="">Wybierz rozmiar...</option>';
+      availableSizes.forEach(size => {
+        const opt = document.createElement('option');
+        opt.value = size;
+        opt.textContent = size;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('orderForm').reset();
+      document.getElementById('productId').value = productId;
+      document.getElementById('formError').classList.add('hidden');
+      document.getElementById('modalForm').classList.remove('hidden');
+      document.getElementById('modalSuccess').classList.add('hidden');
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('submitBtn').textContent = 'Wyślij zamówienie';
+
+      document.getElementById('orderModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('orderModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target === document.getElementById('orderModal')) {
+        closeModal();
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    async function submitOrder(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const errorDiv = document.getElementById('formError');
+
+      btn.disabled = true;
+      btn.textContent = 'Wysyłanie...';
+      errorDiv.classList.add('hidden');
+
+      const formData = {
+        product_id: document.getElementById('productId').value,
+        customer_name: document.getElementById('customerName').value.trim(),
+        customer_contact: document.getElementById('customerContact').value.trim(),
+        size: document.getElementById('sizeSelect').value,
+        notes: document.getElementById('orderNotes').value.trim()
+      };
+
+      try {
+        const resp = await fetch('/zamow', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+          document.getElementById('modalForm').classList.add('hidden');
+          document.getElementById('modalSuccess').classList.remove('hidden');
+        } else {
+          errorDiv.textContent = data.message || 'Wystąpił błąd. Spróbuj ponownie.';
+          errorDiv.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Wyślij zamówienie';
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Błąd połączenia. Spróbuj ponownie.';
+        errorDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Wyślij zamówienie';
+      }
+    }
+  </script>
+</body>
+</html>

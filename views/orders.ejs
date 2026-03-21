@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soma Blanks — Zamówienia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-56 bg-[#111] min-h-screen flex flex-col fixed top-0 left-0 z-10">
+    <div class="px-6 py-6 border-b border-white/10">
+      <span class="text-white text-xl font-bold tracking-widest">SOMA</span>
+      <p class="text-gray-500 text-xs mt-0.5">blanks admin</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="/admin/magazyn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        Magazyn
+      </a>
+      <a href="/admin/zamowienia" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Zamówienia
+      </a>
+      <a href="/admin/dostawa" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        Dostawa
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <a href="/wyloguj" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:text-red-400 text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Wyloguj
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="ml-56 flex-1 p-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Zamówienia</h1>
+      <p class="text-gray-500 text-sm mt-1">Zarządzaj zamówieniami klientów</p>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg text-sm shadow-lg z-50">
+      Zapisano
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="flex gap-1 mb-6 bg-white rounded-xl p-1 shadow-sm border border-gray-100 w-fit">
+      <% const tabs = [
+        { value: '', label: 'Wszystkie' },
+        { value: 'new', label: 'Nowe' },
+        { value: 'confirmed', label: 'Potwierdzone' },
+        { value: 'paid', label: 'Opłacone' },
+        { value: 'shipped', label: 'Wysłane' },
+        { value: 'cancelled', label: 'Anulowane' }
+      ]; %>
+      <% tabs.forEach(tab => { %>
+        <a
+          href="/admin/zamowienia<%= tab.value ? '?status=' + tab.value : '' %>"
+          class="px-3 py-1.5 rounded-lg text-sm transition <%= statusFilter === tab.value ? 'bg-gray-900 text-white font-medium' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50' %>"
+        >
+          <%= tab.label %>
+        </a>
+      <% }) %>
+    </div>
+
+    <!-- Orders table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide border-b border-gray-100">
+              <th class="px-4 py-3 text-left">#ID</th>
+              <th class="px-4 py-3 text-left">Data</th>
+              <th class="px-4 py-3 text-left">Klient</th>
+              <th class="px-4 py-3 text-left">Kontakt</th>
+              <th class="px-4 py-3 text-left">Produkt</th>
+              <th class="px-4 py-3 text-center">Rozmiar</th>
+              <th class="px-4 py-3 text-center">Ilość</th>
+              <th class="px-4 py-3 text-right">Cena</th>
+              <th class="px-4 py-3 text-center">Status</th>
+              <th class="px-4 py-3 text-center">Akcje</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <% if (orders.length === 0) { %>
+              <tr>
+                <td colspan="10" class="px-4 py-10 text-center text-gray-400">Brak zamówień w tej kategorii</td>
+              </tr>
+            <% } else { %>
+              <% orders.forEach(order => { %>
+                <tr id="row-<%= order.id %>" class="hover:bg-gray-50">
+                  <td class="px-4 py-3 text-gray-400 font-mono text-xs">#<%= order.id %></td>
+                  <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><%= formatDate(order.created_at) %></td>
+                  <td class="px-4 py-3">
+                    <div class="font-medium text-gray-800"><%= order.customer_name %></div>
+                    <% if (order.notes) { %>
+                      <div class="text-xs text-gray-400 mt-0.5"><%= order.notes %></div>
+                    <% } %>
+                  </td>
+                  <td class="px-4 py-3 text-gray-600 text-xs"><%= order.customer_contact %></td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0" style="background-color: <%= colorMap[order.sku] || '#999' %>"></div>
+                      <span class="text-gray-700"><%= order.sku %></span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5"><%= order.category %></div>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <span class="inline-block bg-gray-100 text-gray-700 text-xs font-medium px-2 py-0.5 rounded"><%= order.size %></span>
+                  </td>
+                  <td class="px-4 py-3 text-center text-gray-700"><%= order.quantity %></td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-800"><%= (order.price * order.quantity).toFixed(0) %> zł</td>
+                  <td class="px-4 py-3 text-center" id="status-<%= order.id %>">
+                    <% if (order.status === 'new') { %>
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Nowe</span>
+                    <% } else if (order.status === 'confirmed') { %>
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Potwierdzone</span>
+                    <% } else if (order.status === 'paid') { %>
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Opłacone</span>
+                    <% } else if (order.status === 'shipped') { %>
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Wysłane</span>
+                    <% } else if (order.status === 'cancelled') { %>
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Anulowane</span>
+                    <% } %>
+                  </td>
+                  <td class="px-4 py-3 text-center" id="actions-<%= order.id %>">
+                    <div class="flex items-center justify-center gap-1 flex-wrap">
+                      <% if (order.status === 'new') { %>
+                        <button onclick="updateStatus(<%= order.id %>, 'confirmed')" class="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition whitespace-nowrap">Potwierdź</button>
+                        <button onclick="updateStatus(<%= order.id %>, 'cancelled')" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">Anuluj</button>
+                      <% } else if (order.status === 'confirmed') { %>
+                        <button onclick="updateStatus(<%= order.id %>, 'paid')" class="text-xs px-2 py-1 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition">Opłacone</button>
+                        <button onclick="updateStatus(<%= order.id %>, 'cancelled')" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">Anuluj</button>
+                      <% } else if (order.status === 'paid') { %>
+                        <button onclick="updateStatus(<%= order.id %>, 'shipped')" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 transition">Wysłane</button>
+                        <button onclick="updateStatus(<%= order.id %>, 'cancelled')" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">Anuluj</button>
+                      <% } %>
+                      <button onclick="deleteOrder(<%= order.id %>)" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-500 hover:bg-gray-200 transition">Usuń</button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const statusLabels = {
+      new: '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Nowe</span>',
+      confirmed: '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Potwierdzone</span>',
+      paid: '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Opłacone</span>',
+      shipped: '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Wysłane</span>',
+      cancelled: '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Anulowane</span>'
+    };
+
+    function showNotification(msg, isError) {
+      const n = document.getElementById('notification');
+      n.textContent = msg;
+      n.classList.remove('hidden', 'bg-green-600', 'bg-red-600');
+      n.classList.add(isError ? 'bg-red-600' : 'bg-green-600');
+      setTimeout(() => n.classList.add('hidden'), 2500);
+    }
+
+    async function updateStatus(orderId, status) {
+      try {
+        const resp = await fetch('/admin/zamowienia/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId, status })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          document.getElementById('status-' + orderId).innerHTML = statusLabels[status] || '';
+          const actionsCell = document.getElementById('actions-' + orderId);
+          let actionsHtml = '';
+          if (status === 'confirmed') {
+            actionsHtml = `
+              <div class="flex items-center justify-center gap-1 flex-wrap">
+                <button onclick="updateStatus(${orderId}, 'paid')" class="text-xs px-2 py-1 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition">Opłacone</button>
+                <button onclick="updateStatus(${orderId}, 'cancelled')" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">Anuluj</button>
+                <button onclick="deleteOrder(${orderId})" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-500 hover:bg-gray-200 transition">Usuń</button>
+              </div>`;
+          } else if (status === 'paid') {
+            actionsHtml = `
+              <div class="flex items-center justify-center gap-1 flex-wrap">
+                <button onclick="updateStatus(${orderId}, 'shipped')" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 transition">Wysłane</button>
+                <button onclick="updateStatus(${orderId}, 'cancelled')" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">Anuluj</button>
+                <button onclick="deleteOrder(${orderId})" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-500 hover:bg-gray-200 transition">Usuń</button>
+              </div>`;
+          } else {
+            actionsHtml = `
+              <div class="flex items-center justify-center gap-1">
+                <button onclick="deleteOrder(${orderId})" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-500 hover:bg-gray-200 transition">Usuń</button>
+              </div>`;
+          }
+          actionsCell.innerHTML = actionsHtml;
+          showNotification('Status zaktualizowany');
+        } else {
+          showNotification('Błąd aktualizacji', true);
+        }
+      } catch (e) {
+        showNotification('Błąd sieci', true);
+      }
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm('Czy na pewno chcesz usunąć to zamówienie?')) return;
+      try {
+        const resp = await fetch('/admin/zamowienia/usun', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          const row = document.getElementById('row-' + orderId);
+          row.style.transition = 'opacity 0.3s';
+          row.style.opacity = '0';
+          setTimeout(() => row.remove(), 300);
+          showNotification('Zamówienie usunięte');
+        } else {
+          showNotification('Błąd usuwania', true);
+        }
+      } catch (e) {
+        showNotification('Błąd sieci', true);
+      }
+    }
+  </script>
+</body>
+</html>

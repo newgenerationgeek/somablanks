@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soma Blanks — Dostawa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-56 bg-[#111] min-h-screen flex flex-col fixed top-0 left-0 z-10">
+    <div class="px-6 py-6 border-b border-white/10">
+      <span class="text-white text-xl font-bold tracking-widest">SOMA</span>
+      <p class="text-gray-500 text-xs mt-0.5">blanks admin</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="/admin/magazyn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        Magazyn
+      </a>
+      <a href="/admin/zamowienia" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Zamówienia
+      </a>
+      <a href="/admin/dostawa" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        Dostawa
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <a href="/wyloguj" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:text-red-400 text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Wyloguj
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="ml-56 flex-1 p-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Dostawa</h1>
+      <p class="text-gray-500 text-sm mt-1">Dodaj nową dostawę i zaktualizuj stan magazynu</p>
+    </div>
+
+    <!-- Delivery form -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+      <h2 class="font-semibold text-gray-800 mb-5">Nowa dostawa</h2>
+      <form method="POST" action="/admin/dostawa">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Data dostawy</label>
+            <input
+              type="date"
+              name="date"
+              value="<%= today %>"
+              required
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Uwagi (opcjonalnie)</label>
+            <textarea
+              name="notes"
+              rows="1"
+              placeholder="np. Faktura #123"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Product quantities -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-gray-500 text-xs uppercase tracking-wide border-b border-gray-100">
+                <th class="py-2 text-left">Produkt</th>
+                <% sizes.forEach(size => { %>
+                  <th class="py-2 px-2 text-center w-16"><%= size %></th>
+                <% }) %>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <% products.forEach(product => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 pr-4">
+                    <div class="flex items-center gap-2">
+                      <div class="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0" style="background-color: <%= product.color %>"></div>
+                      <div>
+                        <div class="font-medium text-gray-800 text-xs"><%= product.sku %></div>
+                        <div class="text-gray-400 text-xs"><%= product.category %></div>
+                      </div>
+                    </div>
+                  </td>
+                  <% sizes.forEach(size => { %>
+                    <td class="py-3 px-2 text-center">
+                      <input
+                        type="number"
+                        name="qty_<%= product.id %>_<%= size %>"
+                        min="0"
+                        value=""
+                        placeholder="0"
+                        class="w-12 text-center border border-gray-200 rounded px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder-gray-300"
+                      >
+                    </td>
+                  <% }) %>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-6 flex gap-3">
+          <button
+            type="submit"
+            class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+          >
+            Dodaj dostawę
+          </button>
+          <button
+            type="reset"
+            class="border border-gray-200 text-gray-600 px-6 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition"
+          >
+            Wyczyść
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Delivery history -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h2 class="font-semibold text-gray-800">Historia dostaw (ostatnie 10)</h2>
+      </div>
+      <% if (deliveries.length === 0) { %>
+        <div class="px-5 py-8 text-center text-gray-400">Brak historii dostaw</div>
+      <% } else { %>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+              <th class="px-4 py-3 text-left">#</th>
+              <th class="px-4 py-3 text-left">Data</th>
+              <th class="px-4 py-3 text-left">Uwagi</th>
+              <th class="px-4 py-3 text-center">Łącznie szt.</th>
+              <th class="px-4 py-3 text-left">Dodano</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <% deliveries.forEach(delivery => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-400 font-mono text-xs">#<%= delivery.id %></td>
+                <td class="px-4 py-3 font-medium text-gray-800"><%= formatDate(delivery.date) %></td>
+                <td class="px-4 py-3 text-gray-600"><%= delivery.notes || '—' %></td>
+                <td class="px-4 py-3 text-center">
+                  <span class="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-0.5 rounded-full"><%= delivery.total_items %> szt.</span>
+                </td>
+                <td class="px-4 py-3 text-gray-400 text-xs"><%= formatDate(delivery.created_at) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "somablanks",
+  "version": "1.0.0",
+  "description": "Soma Blanks - system zarządzania sprzedażą",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx nodemon server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.9",
+    "express": "^4.18.3",
+    "express-session": "^1.17.3",
+    "lowdb": "^1.0.0"
+  }
+}

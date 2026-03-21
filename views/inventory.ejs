@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soma Blanks — Magazyn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-56 bg-[#111] min-h-screen flex flex-col fixed top-0 left-0 z-10">
+    <div class="px-6 py-6 border-b border-white/10">
+      <span class="text-white text-xl font-bold tracking-widest">SOMA</span>
+      <p class="text-gray-500 text-xs mt-0.5">blanks admin</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="/admin/magazyn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        Magazyn
+      </a>
+      <a href="/admin/zamowienia" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Zamówienia
+      </a>
+      <a href="/admin/dostawa" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        Dostawa
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <a href="/wyloguj" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:text-red-400 text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Wyloguj
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="ml-56 flex-1 p-8">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Magazyn</h1>
+        <p class="text-gray-500 text-sm mt-1">Zarządzaj stanem produktów</p>
+      </div>
+      <button
+        onclick="document.getElementById('addProductForm').classList.toggle('hidden')"
+        class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+      >
+        + Dodaj produkt
+      </button>
+    </div>
+
+    <!-- Add product form -->
+    <div id="addProductForm" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <h2 class="font-semibold text-gray-800 mb-4">Nowy produkt</h2>
+      <form method="POST" action="/admin/magazyn/dodaj" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Nazwa</label>
+          <input type="text" name="name" required placeholder="np. White" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">SKU (kolor)</label>
+          <input type="text" name="sku" required placeholder="np. White" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Kategoria</label>
+          <select name="category" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <option value="Oversized Boxy Tee">Oversized Boxy Tee</option>
+            <option value="Regular Tee">Regular Tee</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Cena (zł)</label>
+          <input type="number" name="price" value="129" step="0.01" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        </div>
+        <div class="col-span-2 md:col-span-4 flex gap-2">
+          <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition">Dodaj</button>
+          <button type="button" onclick="document.getElementById('addProductForm').classList.add('hidden')" class="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition">Anuluj</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg text-sm shadow-lg z-50 transition-all">
+      Zapisano
+    </div>
+
+    <!-- Product tables by category -->
+    <% for (const [category, products] of Object.entries(byCategory)) { %>
+      <% if (products.length === 0) continue; %>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+          <h2 class="font-semibold text-gray-800"><%= category %></h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-gray-500 text-xs uppercase tracking-wide">
+                <th class="px-4 py-3 text-left">Kolor</th>
+                <% sizes.forEach(size => { %>
+                  <th class="px-2 py-3 text-center w-16"><%= size %></th>
+                <% }) %>
+                <th class="px-4 py-3 text-center">Razem</th>
+                <th class="px-4 py-3 text-center">Cena</th>
+                <th class="px-4 py-3 text-center">Widoczność</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <% products.forEach(product => { %>
+                <tr class="hover:bg-gray-50 <%= product.active ? '' : 'opacity-40' %>">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-5 h-5 rounded-full border border-gray-200 flex-shrink-0" style="background-color: <%= product.color %>"></div>
+                      <span class="font-medium text-gray-800"><%= product.sku %></span>
+                    </div>
+                  </td>
+                  <% let total = 0; %>
+                  <% sizes.forEach(size => { %>
+                    <% const stockInfo = product.stock[size]; %>
+                    <% const qty = stockInfo ? stockInfo.qty : 0; %>
+                    <% total += qty; %>
+                    <td class="px-2 py-3 text-center">
+                      <input
+                        type="number"
+                        min="0"
+                        value="<%= qty %>"
+                        data-product-id="<%= product.id %>"
+                        data-size="<%= size %>"
+                        class="stock-input w-12 text-center border border-gray-200 rounded px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent <%= qty === 0 ? 'text-gray-300' : qty === 1 ? 'text-amber-600 font-medium' : 'text-gray-800' %>"
+                      >
+                    </td>
+                  <% }) %>
+                  <td class="px-4 py-3 text-center font-semibold text-gray-700"><%= total %></td>
+                  <td class="px-4 py-3 text-center text-gray-600"><%= product.price %> zł</td>
+                  <td class="px-4 py-3 text-center">
+                    <button
+                      onclick="toggleProduct(<%= product.id %>, this)"
+                      class="text-xs px-3 py-1 rounded-full border transition <%= product.active ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50' %>"
+                      data-active="<%= product.active %>"
+                    >
+                      <%= product.active ? 'Ukryj' : 'Pokaż' %>
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+  </main>
+
+  <script>
+    let saveTimeout = null;
+
+    function showNotification(msg, isError) {
+      const n = document.getElementById('notification');
+      n.textContent = msg || 'Zapisano';
+      n.classList.remove('hidden', 'bg-green-600', 'bg-red-600');
+      n.classList.add(isError ? 'bg-red-600' : 'bg-green-600');
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => n.classList.add('hidden'), 2000);
+    }
+
+    document.querySelectorAll('.stock-input').forEach(input => {
+      let debounce = null;
+      input.addEventListener('change', function() {
+        clearTimeout(debounce);
+        const productId = this.dataset.productId;
+        const size = this.dataset.size;
+        const quantity = parseInt(this.value, 10);
+        if (isNaN(quantity) || quantity < 0) return;
+
+        debounce = setTimeout(async () => {
+          try {
+            const resp = await fetch('/admin/magazyn/aktualizuj', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ product_id: productId, size, quantity })
+            });
+            const data = await resp.json();
+            if (data.success) {
+              showNotification('Zapisano');
+              this.classList.remove('text-gray-300', 'text-amber-600', 'text-gray-800');
+              if (quantity === 0) this.classList.add('text-gray-300');
+              else if (quantity === 1) this.classList.add('text-amber-600', 'font-medium');
+              else this.classList.add('text-gray-800');
+            } else {
+              showNotification('Błąd zapisu', true);
+            }
+          } catch (e) {
+            showNotification('Błąd sieci', true);
+          }
+        }, 400);
+      });
+    });
+
+    async function toggleProduct(productId, btn) {
+      try {
+        const resp = await fetch('/admin/magazyn/ukryj', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: productId })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          const row = btn.closest('tr');
+          if (data.active) {
+            btn.textContent = 'Ukryj';
+            btn.classList.remove('border-green-200', 'text-green-600', 'hover:bg-green-50');
+            btn.classList.add('border-red-200', 'text-red-600', 'hover:bg-red-50');
+            row.classList.remove('opacity-40');
+          } else {
+            btn.textContent = 'Pokaż';
+            btn.classList.remove('border-red-200', 'text-red-600', 'hover:bg-red-50');
+            btn.classList.add('border-green-200', 'text-green-600', 'hover:bg-green-50');
+            row.classList.add('opacity-40');
+          }
+          showNotification(data.active ? 'Produkt widoczny' : 'Produkt ukryty');
+        }
+      } catch (e) {
+        showNotification('Błąd', true);
+      }
+    }
+  </script>
+</body>
+</html>
