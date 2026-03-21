@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
+const crypto = require('crypto');
 const path = require('path');
 const db = require('./database');
 
@@ -8,6 +8,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'somablanks2025';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'change-this-secret-key-in-production';
+
+function makeToken() {
+  const payload = 'auth';
+  const sig = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
+  return `${payload}.${sig}`;
+}
+function verifyToken(token) {
+  if (!token) return false;
+  const expected = makeToken();
+  return token === expected;
+}
 
 const COLOR_MAP = {
   'White': '#F8F8F8',
@@ -31,20 +42,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-  secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
-}));
+app.use(require('cookie-parser')());
 
 function requireAuth(req, res, next) {
-  if (req.session && req.session.authenticated) return next();
+  if (verifyToken(req.cookies && req.cookies['soma_auth'])) return next();
   res.redirect('/login');
 }
 
@@ -99,13 +100,17 @@ app.post('/zamow', (req, res) => {
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 
 app.get('/login', (req, res) => {
-  if (req.session && req.session.authenticated) return res.redirect('/admin');
+  if (verifyToken(req.cookies['soma_auth'])) return res.redirect('/admin');
   res.render('login', { error: null });
 });
 
 app.post('/login', (req, res) => {
   if (req.body.password === ADMIN_PASSWORD) {
-    req.session.authenticated = true;
+    res.cookie('soma_auth', makeToken(), {
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: 'lax'
+    });
     res.redirect('/admin');
   } else {
     res.render('login', { error: 'Nieprawidłowe hasło.' });
@@ -113,7 +118,7 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/wyloguj', (req, res) => {
-  req.session.destroy();
+  res.clearCookie('soma_auth');
   res.redirect('/login');
 });
 
