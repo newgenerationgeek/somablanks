@@ -146,8 +146,7 @@
                   </td>
                   <% let total = 0; %>
                   <% sizes.forEach(size => { %>
-                    <% const stockInfo = product.stock[size]; %>
-                    <% const qty = stockInfo ? stockInfo.qty : 0; %>
+                    <% const qty = product.stock[size] || 0; %>
                     <% total += qty; %>
                     <td class="px-2 py-3 text-center">
                       <input
