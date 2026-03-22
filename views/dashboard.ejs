@@ -73,32 +73,44 @@
       <!-- Metrics cards — 2 cols mobile, 3 cols desktop -->
       <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-6">
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
-          <div class="text-xl lg:text-2xl mb-1">📦</div>
+          <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          </div>
           <div class="text-2xl lg:text-3xl font-bold text-gray-900"><%= totalStock %></div>
           <div class="text-gray-500 text-xs lg:text-sm mt-1">Stan magazynu</div>
         </div>
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
-          <div class="text-xl lg:text-2xl mb-1">🆕</div>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-2">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </div>
           <div class="text-2xl lg:text-3xl font-bold <%= pendingCarts && pendingCarts.length > 0 ? 'text-amber-500' : 'text-blue-600' %>"><%= newOrders %></div>
           <div class="text-gray-500 text-xs lg:text-sm mt-1">Nowe zamówienia<% if (pendingCarts && pendingCarts.length > 0) { %> <span class="text-amber-500 font-semibold">(<%= pendingCarts.length %> koszyków)</span><% } %></div>
         </div>
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
-          <div class="text-xl lg:text-2xl mb-1">💰</div>
+          <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center mb-2">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          </div>
           <div class="text-2xl lg:text-3xl font-bold text-purple-600"><%= confirmedOrders %></div>
           <div class="text-gray-500 text-xs lg:text-sm mt-1">Do opłacenia</div>
         </div>
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
-          <div class="text-xl lg:text-2xl mb-1">📬</div>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center mb-2">
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+          </div>
           <div class="text-2xl lg:text-3xl font-bold text-amber-600"><%= paidOrders %></div>
           <div class="text-gray-500 text-xs lg:text-sm mt-1">Do wysyłki</div>
         </div>
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
-          <div class="text-xl lg:text-2xl mb-1">✅</div>
+          <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center mb-2">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
           <div class="text-2xl lg:text-3xl font-bold text-green-600"><%= revenue.toFixed(0) %> zł</div>
           <div class="text-gray-500 text-xs lg:text-sm mt-1">Przychód</div>
         </div>
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-sm border border-gray-100">
-          <div class="text-xl lg:text-2xl mb-1">⚠️</div>
+          <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center mb-2">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
           <div class="text-2xl lg:text-3xl font-bold text-red-500"><%= lowStock %></div>
           <div class="text-gray-500 text-xs lg:text-sm mt-1">Niski stan</div>
         </div>
@@ -106,7 +118,10 @@
 
       <% if (pendingCarts && pendingCarts.length > 0) { %>
       <div class="mb-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-3">🕐 Oczekujące zamówienia (<%= pendingCarts.length %>)</h2>
+        <h2 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Oczekujące zamówienia (<%= pendingCarts.length %>)
+        </h2>
         <div class="space-y-3">
           <% pendingCarts.forEach(cart => { %>
           <div class="bg-white rounded-xl border-2 border-amber-200 shadow-sm p-4" id="cart-<%= cart.token %>">
@@ -233,7 +248,10 @@
 
           <!-- Low stock -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-5">
-            <h2 class="font-semibold text-gray-800 mb-3 text-sm lg:text-base">⚠️ Niski stan (1 szt.)</h2>
+            <h2 class="font-semibold text-gray-800 mb-3 text-sm lg:text-base flex items-center gap-2">
+              <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              Niski stan (1 szt.)
+            </h2>
             <% if (lowStockItems.length === 0) { %>
               <p class="text-green-600 text-sm">Wszystko OK</p>
             <% } else { %>
